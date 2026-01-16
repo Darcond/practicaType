@@ -28,8 +28,20 @@ function App() {
     }
   }, []);
 
+  // Función para validar email con regex
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validar que el email sea válido
+    if (!isValidEmail(email)) {
+      alert("Por favor, ingresa un correo válido (ejemplo: usuario@dominio.com)");
+      return;
+    }
 
     const storedUsers = localStorage.getItem("users_list");
     const usersList: UserData[] = storedUsers ? JSON.parse(storedUsers) : [];
@@ -82,21 +94,40 @@ function App() {
 
   if (user) {
     return (
-      <div className="card">
-        <h1>¡Hola, {user.name}!</h1>
-        <p><strong>Email:</strong> {user.email}</p>
-        <p><strong>Hobby 1:</strong> {user.hobby1}</p>
-        <p><strong>Hobby 2:</strong> {user.hobby2}</p>
-        <button onClick={handleLogout}>Cerrar Sesión</button>
-      </div>
+      <>
+        <nav className="navbar">
+          <div className="navbar-left">
+            <h2>¡Hola, {user.name}!</h2>
+          </div>
+          <button className="logout-btn" onClick={handleLogout}>Cerrar Sesión</button>
+        </nav>
+        
+        <div className="main-container">
+          <div className="user-card">
+            <div className="info-item">
+              <label>Correo</label>
+              <p>{user.email}</p>
+            </div>
+            <div className="info-item">
+              <label>Hobby 1</label>
+              <p>{user.hobby1}</p>
+            </div>
+            <div className="info-item">
+              <label>Hobby 2</label>
+              <p>{user.hobby2}</p>
+            </div>
+          </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="card">
-      <h1>{isRegistering ? "Crear Cuenta" : "Iniciar Sesión"}</h1>
-      
-      <form onSubmit={handleSubmit}>
+    <div className="auth-container">
+      <div className="auth-card">
+        <h1>{isRegistering ? "Crear Cuenta" : "Iniciar Sesión"}</h1>
+        
+        <form onSubmit={handleSubmit}>
         <input 
           type="email" 
           placeholder="Email" 
@@ -158,18 +189,19 @@ function App() {
         </button>
       </form>
 
-      <p style={{ marginTop: '20px' }}>
+      <p className="toggle-auth">
         <button 
           onClick={() => {
             setIsRegistering(!isRegistering);
             setPassword('');
             setConfirmPassword('');
           }}
-          style={{ background: 'none', border: 'none', color: '#646cff', cursor: 'pointer', textDecoration: 'underline' }}
+          className="toggle-btn"
         >
           {isRegistering ? "Volver al Login" : "Regístrate aquí"}
         </button>
       </p>
+      </div>
     </div>
   );
 }

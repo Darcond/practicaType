@@ -1,10 +1,211 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  /* Degradado tipo Oro (Gold Metallic Gradient) */
+  background: linear-gradient(
+    135deg, 
+    #bf953f 0%, 
+    #4d4c4a 25%, 
+    #b38728 50%, 
+    #222221 75%, 
+    #aa771c 100%
+  );
+  
+  /* Aseguramos que cubra toda la pantalla */
+  background-attachment: fixed; /* Mantiene el brillo quieto mientras haces scroll */
+  padding: 0;
   text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
 }
 
+/* ===== NAVBAR ===== */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #2c3e50;
+  color: white;
+  gap: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.navbar-left h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  text-align: left;
+}
+
+.logout-btn {
+  padding: 0.5rem 1rem;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+  white-space: nowrap;
+}
+
+.logout-btn:hover {
+  background-color: #c0392b;
+}
+
+/* ===== MAIN CONTAINER (CUANDO ESTÁ LOGEADO) ===== */
+.main-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.user-card {
+  background-color: #fff;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: left;
+  padding: 1rem;
+  background-color: #2d3116ce;
+  border-radius: 8px;
+  border-left: 4px solid #2c3e50;
+}
+
+.info-item label {
+  font-weight: 600;
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.info-item p {
+  margin: 0;
+  color: #fff;
+  font-size: 1rem;
+  word-break: break-word;
+}
+
+/* ===== AUTH CONTAINER (LOGIN/REGISTRO) ===== */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.auth-card {
+  /* Fondo con transparencia (blanco muy suave) */
+  background: rgba(226, 241, 11, 0.575); 
+  
+  /* El efecto de desenfoque detrás del cristal */
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px); /* Soporte para Safari */
+  
+  /* Bordes suaves y redondeados */
+  border-radius: 20px; /* Un poco más curvo para estilo iPhone */
+  padding: 2rem;
+  width: 90%;
+  max-width: 400px;
+  
+  /* Borde brillante para simular el grosor del cristal */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  
+  /* Sombra muy suave y difuminada */
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  
+  /* Para que el contenido destaque sobre el cristal */
+  color: #ffffff; 
+}
+
+/* Ajuste opcional para que los inputs no rompan el efecto */
+.auth-card input {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgb(3, 0, 0);
+}
+
+.auth-card input::placeholder {
+  color: rgba(14, 0, 0, 0.281);
+}
+
+.auth-card h1 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+  font-size: 1.75rem;
+}
+
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-card input:focus {
+  outline: none;
+  border-color: #2c3e50;
+}
+
+.auth-card button[type="submit"] {
+  padding: 0.75rem;
+  background-color: #2c3e50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.auth-card button[type="submit"]:hover {
+  background-color: #1a252f;
+}
+
+.toggle-auth {
+  margin-top: 1rem;
+  margin-bottom: 0;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: #2c3e50;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.toggle-btn:hover {
+  color: #e74c3c;
+}
+
+/* ===== LOGO (SI AÚN LO USAS) ===== */
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -39,4 +240,84 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* ===== MEDIA QUERIES - TABLET ===== */
+@media (min-width: 640px) {
+  .navbar {
+    background-color: rgba(226, 241, 11, 0.267); ;
+    padding: 1.25rem 2rem;
+  }
+
+  .navbar-left h2 {
+    font-size: 1.5rem;
+  }
+
+  .main-container {
+    padding: 2rem;
+  }
+
+  .user-card {
+    background-color: rgba(226, 241, 11, 0.281); 
+    padding: 2rem;
+    max-width: 600px;
+  }
+
+  .auth-card {
+    padding: 2rem;
+    max-width: 450px;
+  }
+
+  .auth-card h1 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+}
+
+/* ===== MEDIA QUERIES - DESKTOP ===== */
+@media (min-width: 1024px) {
+  .navbar {
+    padding: 1.5rem 3rem;
+  }
+
+  .navbar-left h2 {
+    font-size: 1.75rem;
+  }
+
+  .logout-btn {
+    font-size: 1rem;
+  }
+
+  .main-container {
+    padding: 3rem 2rem;
+  }
+
+  .user-card {
+    padding: 2.5rem;
+    max-width: 700px;
+    gap: 2rem;
+  }
+
+  .info-item {
+    padding: 1.5rem;
+    font-size: 1.1rem;
+  }
+
+  .auth-container {
+    padding: 2rem;
+  }
+
+  .auth-card {
+    padding: 3rem;
+    max-width: 500px;
+  }
+
+  .auth-card h1 {
+    font-size: 2.25rem;
+  }
+
+  .auth-card input {
+    padding: 1rem;
+    font-size: 1.05rem;
+  }
 }
