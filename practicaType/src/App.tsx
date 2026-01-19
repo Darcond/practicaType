@@ -3,11 +3,9 @@ import './App.css'
 
 interface UserData {
   email: string;
-  password?: string;
+  password: string;
   name: string;
-  hobby1: string;
-  hobby2: string;
-  token: string;
+  hobbies: string[];
 }
 
 function App() {
@@ -18,8 +16,7 @@ function App() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState(''); // Nuevo estado
   const [name, setName] = useState('');
-  const [hobby1, setHobby1] = useState('');
-  const [hobby2, setHobby2] = useState('');
+  const [hobbies, setHobbies] = useState<string[]>(['', '']);
 
   useEffect(() => {
     const loggedInUser = localStorage.getItem("user_session");
@@ -34,54 +31,57 @@ function App() {
     return emailRegex.test(email);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    // Validar que el email sea válido
-    if (!isValidEmail(email)) {
-      alert("Por favor, ingresa un correo válido (ejemplo: usuario@dominio.com)");
-      return;
+  // 1. Validación básica de Email
+  if (!isValidEmail(email)) {
+    alert("Por favor, ingresa un correo válido");
+    return;
+  }
+
+  // 2. Definir URL y datos según la acción (Registro o Login)
+  // Asegúrate de que el puerto coincida con el de tu servidor Node
+  const API_URL = 'http://localhost:3000'; 
+  const endpoint = isRegistering ? '/users/create' : '/users/login';
+  
+  const payload = isRegistering 
+    ? { email, password, name, hobbies } 
+    : { email, password };
+
+  try {
+    // 3. Realizar la petición al servidor
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    // 4. Manejar errores del servidor (ej. 401 Credenciales inválidas)
+    if (!response.ok) {
+      throw new Error(data.error || 'Hubo un error en la autenticación');
     }
 
-    const storedUsers = localStorage.getItem("users_list");
-    const usersList: UserData[] = storedUsers ? JSON.parse(storedUsers) : [];
-
+    // 5. Manejar éxito
     if (isRegistering) {
-      // --- VALIDACIÓN DE CONTRASEÑA ---
-      if (password !== confirmPassword) {
-        alert("Las contraseñas no coinciden. Por favor, verifica.");
-        return; // Detiene la ejecución si no son iguales
-      }
-
-      const exists = usersList.find(u => u.email === email);
-      if (exists) return alert("Este correo ya está registrado");
-
-      const newUser: UserData = { 
-        email, 
-        password, 
-        name, 
-        hobby1, 
-        hobby2, 
-        token: "fake-jwt-" + Math.random() 
-      };
-
-      usersList.push(newUser);
-      localStorage.setItem("users_list", JSON.stringify(usersList));
-      
-      setUser(newUser);
-      localStorage.setItem("user_session", JSON.stringify(newUser));
-      alert("Registro exitoso");
-
+      alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
+      setIsRegistering(false); // Cambia automáticamente a la vista de Login
+      setPassword(''); // Limpia para el login
     } else {
-      const foundUser = usersList.find(u => u.email === email && u.password === password);
-      if (foundUser) {
-        setUser(foundUser);
-        localStorage.setItem("user_session", JSON.stringify(foundUser));
-      } else {
-        alert("Correo o contraseña incorrectos");
-      }
+      // Caso Login exitoso
+      setUser(data.user); // Guardamos el usuario en el estado de React
+      localStorage.setItem("user_session", JSON.stringify(data.user));
+      alert(data.message || "Bienvenido");
     }
-  };
+
+  } catch (error: any) {
+    alert("Error del servidor: " + error.message);
+  }
+};
 
   const handleLogout = () => {
     setUser(null);
@@ -90,6 +90,7 @@ function App() {
     setPassword('');
     setConfirmPassword('');
     setName('');
+    setHobbies(['', '']);
   };
 
   if (user) {
@@ -108,14 +109,12 @@ function App() {
               <label>Correo</label>
               <p>{user.email}</p>
             </div>
-            <div className="info-item">
-              <label>Hobby 1</label>
-              <p>{user.hobby1}</p>
-            </div>
-            <div className="info-item">
-              <label>Hobby 2</label>
-              <p>{user.hobby2}</p>
-            </div>
+            {user.hobbies.map((hobby, index) => (
+              <div className="info-item" key={index}>
+                <label>Hobby {index + 1}</label>
+                <p>{hobby}</p>
+              </div>
+            ))}
           </div>
         </div>
       </>
@@ -128,6 +127,7 @@ function App() {
         <h1>{isRegistering ? "Crear Cuenta" : "Iniciar Sesión"}</h1>
         
         <form onSubmit={handleSubmit}>
+          <label htmlFor="email">{isRegistering ? "Registra tu correo electrónico" : "Ingresa tu correo electrónico"}</label>
         <input 
           type="email" 
           placeholder="Email" 
@@ -136,7 +136,8 @@ function App() {
           required 
         />
         <br/><br/>
-        
+
+        <label htmlFor="password">{isRegistering ? "Regístra tu contraseña" : "Ingresa con tu contraseña"}</label>
         <input 
           type="password" 
           placeholder="Contraseña" 
@@ -149,6 +150,7 @@ function App() {
         {/* CAMPO CONDICIONAL: CONFIRMAR CONTRASEÑA */}
         {isRegistering && (
           <>
+          <label htmlFor="confirmPassword">Confirma tu contraseña</label>
             <input 
               type="password" 
               placeholder="Confirmar contraseña" 
@@ -157,6 +159,7 @@ function App() {
               required 
             />
             <br/><br/>
+            <label htmlFor="name">Nombre Completo</label>
             <input 
               type="text" 
               placeholder="Nombre completo" 
@@ -165,22 +168,24 @@ function App() {
               required 
             />
             <br/><br/>
-            <input 
-              type="text" 
-              placeholder="Hobby 1" 
-              value={hobby1}
-              onChange={(e) => setHobby1(e.target.value)}
-              required 
-            />
-            <br/><br/>
-            <input 
-              type="text" 
-              placeholder="Hobby 2" 
-              value={hobby2}
-              onChange={(e) => setHobby2(e.target.value)}
-              required 
-            />
-            <br/><br/>
+            {hobbies.map((hobby, index) => (
+              <div key={index}>
+                <label htmlFor={`hobby${index}`}>Hobby {index + 1}</label>
+                <input 
+                  type="text" 
+                  id={`hobby${index}`}
+                  placeholder={`Hobby ${index + 1}`}
+                  value={hobby}
+                  onChange={(e) => {
+                    const newHobbies = [...hobbies];
+                    newHobbies[index] = e.target.value;
+                    setHobbies(newHobbies);
+                  }}
+                  required 
+                />
+                <br/><br/>
+              </div>
+            ))}
           </>
         )}
         
