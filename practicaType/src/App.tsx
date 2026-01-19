@@ -1,25 +1,25 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 
+const API_URL = 'http://localhost:3000';
+
 interface UserData {
   email: string;
   password?: string;
   name: string;
-  hobby1: string;
-  hobby2: string;
-  token: string;
+  hobbies: string[];
 }
 
 function App() {
   const [user, setUser] = useState<UserData | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState(''); // Nuevo estado
   const [name, setName] = useState('');
-  const [hobby1, setHobby1] = useState('');
-  const [hobby2, setHobby2] = useState('');
+  const [hobbies, setHobbies] = useState<string[]>(['', '']);
+
 
   useEffect(() => {
     const loggedInUser = localStorage.getItem("user_session");
@@ -34,7 +34,7 @@ function App() {
     return emailRegex.test(email);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validar que el email sea válido
@@ -47,40 +47,35 @@ function App() {
     const usersList: UserData[] = storedUsers ? JSON.parse(storedUsers) : [];
 
     if (isRegistering) {
-      // --- VALIDACIÓN DE CONTRASEÑA ---
       if (password !== confirmPassword) {
-        alert("Las contraseñas no coinciden. Por favor, verifica.");
-        return; // Detiene la ejecución si no son iguales
+        alert("Las contraseñas no coinciden");
+        return;
       }
 
-      const exists = usersList.find(u => u.email === email);
-      if (exists) return alert("Este correo ya está registrado");
+      const response = await fetch(`${API_URL}/users/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          name,
+          hobbies
+        })
+      });
 
-      const newUser: UserData = { 
-        email, 
-        password, 
-        name, 
-        hobby1, 
-        hobby2, 
-        token: "fake-jwt-" + Math.random() 
-      };
+      if (!response.ok) {
+        const error = await response.json();
+        alert(error.error || 'Error al registrar');
+        return;
+      }
 
-      usersList.push(newUser);
-      localStorage.setItem("users_list", JSON.stringify(usersList));
-      
+      const newUser = await response.json();
       setUser(newUser);
       localStorage.setItem("user_session", JSON.stringify(newUser));
-      alert("Registro exitoso");
-
-    } else {
-      const foundUser = usersList.find(u => u.email === email && u.password === password);
-      if (foundUser) {
-        setUser(foundUser);
-        localStorage.setItem("user_session", JSON.stringify(foundUser));
-      } else {
-        alert("Correo o contraseña incorrectos");
-      }
     }
+
   };
 
   const handleLogout = () => {
@@ -101,7 +96,7 @@ function App() {
           </div>
           <button className="logout-btn" onClick={handleLogout}>Cerrar Sesión</button>
         </nav>
-        
+
         <div className="main-container">
           <div className="user-card">
             <div className="info-item">
@@ -110,11 +105,11 @@ function App() {
             </div>
             <div className="info-item">
               <label>Hobby 1</label>
-              <p>{user.hobby1}</p>
+              <p>{user.hobbies[0]}</p>
             </div>
             <div className="info-item">
               <label>Hobby 2</label>
-              <p>{user.hobby2}</p>
+              <p>{user.hobbies[1]}</p>
             </div>
           </div>
         </div>
@@ -126,81 +121,81 @@ function App() {
     <div className="auth-container">
       <div className="auth-card">
         <h1>{isRegistering ? "Crear Cuenta" : "Iniciar Sesión"}</h1>
-        
+
         <form onSubmit={handleSubmit}>
-        <input 
-          type="email" 
-          placeholder="Email" 
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required 
-        />
-        <br/><br/>
-        
-        <input 
-          type="password" 
-          placeholder="Contraseña" 
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required 
-        />
-        <br/><br/>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <br /><br />
 
-        {/* CAMPO CONDICIONAL: CONFIRMAR CONTRASEÑA */}
-        {isRegistering && (
-          <>
-            <input 
-              type="password" 
-              placeholder="Confirmar contraseña" 
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required 
-            />
-            <br/><br/>
-            <input 
-              type="text" 
-              placeholder="Nombre completo" 
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required 
-            />
-            <br/><br/>
-            <input 
-              type="text" 
-              placeholder="Hobby 1" 
-              value={hobby1}
-              onChange={(e) => setHobby1(e.target.value)}
-              required 
-            />
-            <br/><br/>
-            <input 
-              type="text" 
-              placeholder="Hobby 2" 
-              value={hobby2}
-              onChange={(e) => setHobby2(e.target.value)}
-              required 
-            />
-            <br/><br/>
-          </>
-        )}
-        
-        <button type="submit">
-          {isRegistering ? "Registrarme" : "Entrar"}
-        </button>
-      </form>
+          <input
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <br /><br />
 
-      <p className="toggle-auth">
-        <button 
-          onClick={() => {
-            setIsRegistering(!isRegistering);
-            setPassword('');
-            setConfirmPassword('');
-          }}
-          className="toggle-btn"
-        >
-          {isRegistering ? "Volver al Login" : "Regístrate aquí"}
-        </button>
-      </p>
+          {/* CAMPO CONDICIONAL: CONFIRMAR CONTRASEÑA */}
+          {isRegistering && (
+            <>
+              <input
+                type="password"
+                placeholder="Confirmar contraseña"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+              <br /><br />
+              <input
+                type="text"
+                placeholder="Nombre completo"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+              <br /><br />
+              <input
+                type="text"
+                placeholder="Hobby 1"
+                value={hobbies[0]}
+                onChange={(e) => setHobbies([e.target.value, hobbies[1]])}
+                required
+              />
+              <br /><br />
+              <input
+                type="text"
+                placeholder="Hobby 2"
+                value={hobbies[1]}
+                onChange={(e) => setHobbies([hobbies[0], e.target.value])}
+                required
+              />
+              <br /><br />
+            </>
+          )}
+
+          <button type="submit">
+            {isRegistering ? "Registrarme" : "Entrar"}
+          </button>
+        </form>
+
+        <p className="toggle-auth">
+          <button
+            onClick={() => {
+              setIsRegistering(!isRegistering);
+              setPassword('');
+              setConfirmPassword('');
+            }}
+            className="toggle-btn"
+          >
+            {isRegistering ? "Volver al Login" : "Regístrate aquí"}
+          </button>
+        </p>
       </div>
     </div>
   );
